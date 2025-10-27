@@ -1,0 +1,284 @@
+# MalCapture Defender Configuration File
+
+# Application Settings
+application:
+  name: "MalCapture Defender"
+  version: "1.0.0"
+  log_level: "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+  admin_required: true
+
+# Detection Engine Settings
+detection:
+  enabled: true
+  sensitivity: "medium"  # low, medium, high
+  scan_interval: 2  # seconds
+
+  # Risk score thresholds
+  risk_thresholds:
+    low: 3
+    medium: 6
+    high: 8
+    critical: 9
+
+# Process Monitor Settings
+process_monitor:
+  enabled: true
+  scan_interval: 5  # seconds
+
+  # Known malicious screenshot utilities
+  suspicious_processes:
+    - "psr.exe"           # Problem Steps Recorder
+    - "snippet.exe"       # Snipping Tool (old)
+    - "ScreenSnip.exe"    # Snipping Tool (new)
+    - "sharex.exe"
+    - "greenshot.exe"
+    - "lightshot.exe"
+    - "gyazo.exe"
+    - "puush.exe"
+    - "screencast.exe"
+    - "obs64.exe"         # OBS Studio (can record screen)
+    - "obs32.exe"
+
+  # Whitelisted processes (won't trigger alerts)
+  whitelist:
+    - "explorer.exe"
+    - "dwm.exe"
+    - "System"
+    - "Registry"
+    - "smss.exe"
+    - "csrss.exe"
+    - "wininit.exe"
+    - "services.exe"
+    - "lsass.exe"
+    - "winlogon.exe"
+    - "MsMpEng.exe"       # Windows Defender
+    - "Teams.exe"         # Microsoft Teams (screen sharing)
+    - "Zoom.exe"          # Zoom (screen sharing)
+    - "discord.exe"       # Discord (screen sharing)
+
+  # Monitor these process characteristics
+  monitor_characteristics:
+    hidden_windows: true
+    no_window: true
+    suspicious_parent: true
+    unsigned_binaries: true
+
+# API Monitor Settings
+api_monitor:
+  enabled: true
+
+  # Windows APIs to monitor
+  monitored_apis:
+    gdi32:
+      - "BitBlt"
+      - "StretchBlt"
+      - "CreateCompatibleDC"
+      - "CreateCompatibleBitmap"
+      - "GetDIBits"
+    user32:
+      - "GetDC"
+      - "GetWindowDC"
+      - "GetDCEx"
+      - "ReleaseDC"
+      - "PrintWindow"
+
+  # Alert threshold (API calls per minute)
+  call_threshold: 30
+
+  # Time window for pattern detection (seconds)
+  pattern_window: 60
+
+# File System Monitor Settings
+file_monitor:
+  enabled: true
+
+  # Monitored directories
+  monitored_paths:
+    - "%TEMP%"
+    - "%APPDATA%"
+    - "%LOCALAPPDATA%"
+    - "C:\\Windows\\Temp"
+    - "C:\\ProgramData"
+
+  # File extensions to monitor
+  image_extensions:
+    - ".png"
+    - ".jpg"
+    - ".jpeg"
+    - ".bmp"
+    - ".gif"
+    - ".tiff"
+    - ".webp"
+
+  # Alert on rapid file creation
+  rapid_creation_threshold: 5  # files
+  rapid_creation_window: 30    # seconds
+
+  # Ignore these directories
+  ignore_paths:
+    - "C:\\Windows\\WinSxS"
+    - "C:\\Windows\\System32\\DriverStore"
+    - "%APPDATA%\\Microsoft\\Windows\\Themes"
+
+# Network Monitor Settings
+network_monitor:
+  enabled: true
+
+  # Monitor these protocols
+  monitored_protocols:
+    - "TCP"
+    - "UDP"
+    - "HTTP"
+    - "HTTPS"
+
+  # Suspicious ports (common C2 channels)
+  suspicious_ports:
+    - 4444
+    - 5555
+    - 6666
+    - 8080
+    - 8888
+    - 9999
+
+  # Alert on large image transfers
+  large_transfer_threshold: 1048576  # bytes (1MB)
+
+  # Monitor upload bandwidth
+  bandwidth_threshold: 5242880  # bytes per minute (5MB)
+
+  # Whitelist IPs/Domains (won't trigger alerts)
+  whitelist:
+    - "127.0.0.1"
+    - "localhost"
+    - "*.microsoft.com"
+    - "*.windows.com"
+    - "*.adobe.com"
+
+# Alert Manager Settings
+alerts:
+  enabled: true
+
+  # Alert delivery methods
+  methods:
+    gui_notification: true
+    log_file: true
+    sound_alert: true
+    email_alert: false
+
+  # Email settings (if enabled)
+  email:
+    smtp_server: "smtp.gmail.com"
+    smtp_port: 587
+    sender: "your-email@gmail.com"
+    receiver: "your-email@gmail.com"
+    password: ""  # Use environment variable instead
+
+  # Alert aggregation (prevent spam)
+  aggregation:
+    enabled: true
+    window: 60  # seconds
+    max_alerts: 10
+
+  # Alert retention
+  retention_days: 30
+
+# Logging Settings
+logging:
+  enabled: true
+  log_directory: "logs"
+
+  # Log rotation
+  max_file_size: 10485760  # bytes (10MB)
+  backup_count: 5
+
+  # Log format
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  date_format: "%Y-%m-%d %H:%M:%S"
+
+  # Console logging
+  console_output: true
+  console_level: "INFO"
+
+# GUI Settings
+gui:
+  enabled: true
+
+  # Window settings
+  window:
+    width: 1200
+    height: 800
+    title: "MalCapture Defender - Malicious Screen Capture Detection"
+
+  # Theme
+  theme: "dark"  # dark, light
+
+  # Update intervals
+  refresh_interval: 1000  # milliseconds
+  chart_update_interval: 2000  # milliseconds
+
+  # Chart settings
+  chart:
+    max_data_points: 100
+    show_grid: true
+
+# Database Settings
+database:
+  enabled: true
+  type: "sqlite"  # sqlite, mysql, postgresql
+  path: "data/malcapture.db"
+
+  # Data retention
+  retention:
+    alerts: 90  # days
+    logs: 30    # days
+    statistics: 365  # days
+
+# Performance Settings
+performance:
+  max_cpu_usage: 10  # percent
+  max_memory_usage: 256  # MB
+
+  # Thread pool settings
+  thread_pool_size: 4
+
+  # Enable/disable modules to reduce load
+  lite_mode: false
+
+# Update Settings
+updates:
+  check_for_updates: true
+  update_url: "https://github.com/yourusername/Detection-of-Malicious-Screen-Capture/releases"
+  auto_update: false
+
+# MITRE ATT&CK Settings
+mitre:
+  enabled: true
+
+  # T1113 - Screen Capture
+  techniques:
+    T1113:
+      name: "Screen Capture"
+      tactic: "Collection"
+      severity: "high"
+      enabled: true
+
+# Advanced Settings
+advanced:
+  # Behavioral analysis
+  behavioral_analysis:
+    enabled: true
+    learning_period: 7  # days
+    anomaly_threshold: 0.8
+
+  # Honeypot screenshot files
+  honeypot:
+    enabled: false
+    files:
+      - "C:\\Users\\Public\\Documents\\passwords.png"
+      - "C:\\Users\\Public\\Documents\\credentials.png"
+
+  # Self-protection
+  self_protection:
+    enabled: true
+    prevent_termination: true
+    hide_from_process_list: false
