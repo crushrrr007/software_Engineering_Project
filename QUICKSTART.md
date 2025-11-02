@@ -26,7 +26,7 @@
 ### Step 1: Navigate to Project Directory
 
 ```bash
-cd /home/user/Detection-of-Malicious-Screen-Capture
+cd /home/user/software_Engineering_Project
 ```
 
 ### Step 2: Install Dependencies
@@ -70,7 +70,7 @@ python src/main.py --no-gui
 python src\main.py
 
 # Or with full path
-python C:\path\to\Detection-of-Malicious-Screen-Capture\src\main.py
+python C:\path\to\software_Engineering_Project\src\main.py
 ```
 
 ### Option 2: CLI Mode Only
@@ -202,7 +202,7 @@ process_monitor:
 ## 📁 Where to Find Data
 
 ```
-Detection-of-Malicious-Screen-Capture/
+software_Engineering_Project/
 ├── logs/                          # All log files
 │   ├── MalCapture_YYYYMMDD.log   # Main application log
 │   └── alerts_YYYYMMDD.json      # Alert history
@@ -235,7 +235,7 @@ sudo python src/main.py --no-gui
 **Solution**:
 ```bash
 # Make sure you're in the project directory
-cd /home/user/Detection-of-Malicious-Screen-Capture
+cd /home/user/software_Engineering_Project
 ls config.yaml  # Should exist
 ```
 

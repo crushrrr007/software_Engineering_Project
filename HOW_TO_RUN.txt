@@ -27,7 +27,7 @@
 ═══════════════════════════════════════════════════════════════════════════════
 
 # 1. Navigate to project directory
-cd /home/user/Detection-of-Malicious-Screen-Capture
+cd /home/user/software_Engineering_Project
 
 # 2. Install required packages
 pip install psutil PyYAML watchdog
@@ -189,7 +189,7 @@ SOLUTION: Run with sudo (Linux) or Administrator (Windows)
 
 ISSUE: "Config file not found"
 SOLUTION: Make sure you're in the project directory
-          cd /home/user/Detection-of-Malicious-Screen-Capture
+          cd /home/user/software_Engineering_Project
           ls config.yaml  # Should exist
 
 ISSUE: High CPU usage
@@ -203,7 +203,7 @@ SOLUTION: Use --no-gui flag or install PyQt5
 📁 FILE STRUCTURE
 ═══════════════════════════════════════════════════════════════════════════════
 
-Detection-of-Malicious-Screen-Capture/
+software_Engineering_Project/
 │
 ├── src/
 │   ├── main.py                      # Main application entry point
@@ -278,7 +278,7 @@ verify_installation.py    - Automated verification script
 Before running, verify:
 
 [ ] Python 3.8+ installed (python --version)
-[ ] In correct directory (cd /home/user/Detection-of-Malicious-Screen-Capture)
+[ ] In correct directory (cd /home/user/software_Engineering_Project)
 [ ] Config file exists (ls config.yaml)
 [ ] Dependencies installed (pip install psutil PyYAML watchdog)
 [ ] Permissions OK (python verify_installation.py)
@@ -314,7 +314,7 @@ DEMO SUGGESTIONS:
 
 Your MalCapture Defender is ready. To start:
 
-    cd /home/user/Detection-of-Malicious-Screen-Capture
+    cd /home/user/software_Engineering_Project
     pip install psutil PyYAML watchdog
     python src/main.py --no-gui
 

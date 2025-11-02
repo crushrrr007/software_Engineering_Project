@@ -307,7 +307,7 @@ performance:
 # Update Settings
 updates:
   check_for_updates: true
-  update_url: "https://github.com/yourusername/Detection-of-Malicious-Screen-Capture/releases"
+  update_url: "https://github.com/crushrrr007/software_Engineering_Project/releases"
   auto_update: false
 
 # MITRE ATT&CK Settings

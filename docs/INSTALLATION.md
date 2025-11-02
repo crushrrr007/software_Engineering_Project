@@ -34,8 +34,8 @@ python --version
 ### 2. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/Detection-of-Malicious-Screen-Capture.git
-cd Detection-of-Malicious-Screen-Capture
+git clone https://github.com/crushrrr007/software_Engineering_Project.git
+cd software_Engineering_Project
 ```
 
 ### 3. Install Dependencies
@@ -180,5 +180,5 @@ pip install -r requirements.txt --upgrade
 ## Support
 
 For issues and questions:
-- GitHub Issues: https://github.com/yourusername/Detection-of-Malicious-Screen-Capture/issues
+- GitHub Issues: https://github.com/crushrrr007/software_Engineering_Project/issues
 - Documentation: See `docs/` directory

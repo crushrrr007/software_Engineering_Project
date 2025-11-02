@@ -100,8 +100,8 @@ MalCapture-Defender/
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/Detection-of-Malicious-Screen-Capture.git
-cd Detection-of-Malicious-Screen-Capture
+git clone https://github.com/crushrrr007/software_Engineering_Project.git
+cd software_Engineering_Project
 ```
 
 2. Install required dependencies:

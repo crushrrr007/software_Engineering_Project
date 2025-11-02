@@ -98,7 +98,7 @@ Examples:
   # Export report and exit
   python main.py --export-report report.json --no-run
 
-For more information, visit: https://github.com/yourusername/Detection-of-Malicious-Screen-Capture
+For more information, visit: https://github.com/crushrrr007/software_Engineering_Project
         """
     )
 
