@@ -12,11 +12,32 @@ from datetime import datetime, timedelta
 from collections import deque
 from pathlib import Path
 
+# Try to import notification libraries (winotify preferred, win10toast as fallback)
+try:
+    from winotify import Notification, audio
+    NOTIFICATIONS_AVAILABLE = True
+    NOTIFICATION_TYPE = 'winotify'
+except ImportError:
+    try:
+        from win10toast import ToastNotifier
+        NOTIFICATIONS_AVAILABLE = True
+        NOTIFICATION_TYPE = 'win10toast'
+    except ImportError:
+        NOTIFICATIONS_AVAILABLE = False
+        NOTIFICATION_TYPE = None
+        print("No notification library available - install winotify or win10toast")
+
 
 class Alert:
     """Represents a security alert"""
 
     def __init__(self, alert_data: Dict):
+        """
+        Initialize an alert
+        
+        Args:
+            alert_data: Dictionary containing alert information
+        """
         self.timestamp = alert_data.get("timestamp", datetime.now())
         self.type = alert_data.get("type", "unknown")
         self.severity = alert_data.get("severity", "medium")
@@ -59,6 +80,19 @@ class AlertManager:
         """
         self.config = config
         self.logger = logger
+
+        # Initialize notification system
+        if NOTIFICATIONS_AVAILABLE:
+            if NOTIFICATION_TYPE == 'winotify':
+                self.notification_type = 'winotify'
+                self.logger.info("Desktop notifications enabled (winotify)")
+            else:
+                self.toaster = ToastNotifier()
+                self.notification_type = 'win10toast'
+                self.logger.info("Desktop notifications enabled (win10toast)")
+        else:
+            self.notification_type = None
+            self.logger.warning("Desktop notifications unavailable - install winotify or win10toast")
 
         # Alert storage
         self.alerts = deque(maxlen=10000)
@@ -120,6 +154,10 @@ class AlertManager:
         if self.log_file:
             self._save_alert_to_file(alert)
 
+        # Show desktop notification for critical/high alerts
+        if alert.severity in ['critical', 'high']:
+            self._show_notification(alert)
+
         # Trigger callbacks
         self._trigger_callbacks(alert)
 
@@ -176,13 +214,137 @@ class AlertManager:
             date_str = datetime.now().strftime("%Y%m%d")
             log_file = os.path.join(self.log_directory, f"alerts_{date_str}.json")
 
-            # Append to file
-            with open(log_file, "a") as f:
-                json.dump(alert.to_dict(), f)
+            # Convert to dict and ensure datetime is serializable
+            alert_dict = alert.to_dict()
+            
+            # Convert any datetime objects to ISO format strings
+            if 'timestamp' in alert_dict and isinstance(alert_dict['timestamp'], datetime):
+                alert_dict['timestamp'] = alert_dict['timestamp'].isoformat()
+            
+            # Also check nested data
+            if 'data' in alert_dict and isinstance(alert_dict['data'], dict):
+                for key, value in alert_dict['data'].items():
+                    if isinstance(value, datetime):
+                        alert_dict['data'][key] = value.isoformat()
+
+            # Append to file with encoding
+            with open(log_file, "a", encoding='utf-8') as f:
+                json.dump(alert_dict, f, default=str, ensure_ascii=False)
                 f.write("\n")
 
         except Exception as e:
             self.logger.error(f"Failed to save alert to file: {e}")
+
+    def _show_notification(self, alert: Alert):
+        """
+        Show desktop notification for important alerts
+        
+        Args:
+            alert: Alert object
+        """
+        try:
+            # Check if notifications are enabled in config
+            if not self.config.get("methods", {}).get("desktop_notification", True):
+                return
+            
+            if not self.notification_type:
+                return
+            
+            # Check severity threshold if configured
+            notif_config = self.config.get("notification", {})
+            if notif_config:
+                threshold = notif_config.get("severity_threshold", "high")
+                severity_levels = {"low": 1, "medium": 2, "high": 3, "critical": 4}
+                alert_level = severity_levels.get(alert.severity, 0)
+                threshold_level = severity_levels.get(threshold, 3)
+                
+                if alert_level < threshold_level:
+                    return
+            
+            # Prepare notification content
+            title = f"MalCapture Alert - {alert.severity.upper()}"
+            
+            # Truncate message if too long
+            message = alert.message
+            if len(message) > 200:
+                message = message[:197] + "..."
+            
+            # Add MITRE technique if available
+            if alert.mitre_technique:
+                message += f"\n\nMITRE: {alert.mitre_technique}"
+            
+            # Show notification based on type
+            if self.notification_type == 'winotify':
+                # Use winotify (modern, better)
+                threading.Thread(
+                    target=self._show_winotify,
+                    args=(title, message, alert.severity),
+                    daemon=True
+                ).start()
+            else:
+                # Use win10toast (fallback)
+                threading.Thread(
+                    target=self._show_toast,
+                    args=(title, message, None, 7),
+                    daemon=True
+                ).start()
+            
+            self.logger.debug(f"Desktop notification shown for {alert.severity} alert")
+            
+        except Exception as e:
+            self.logger.error(f"Failed to show desktop notification: {e}")
+
+    def _show_winotify(self, title: str, message: str, severity: str):
+        """
+        Show winotify notification (modern Windows 10/11)
+        
+        Args:
+            title: Notification title
+            message: Notification message
+            severity: Alert severity
+        """
+        try:
+            # Create notification
+            toast = Notification(
+                app_id="MalCapture.Defender",
+                title=title,
+                msg=message,
+                duration="short"
+            )
+            
+            # Add sound for critical alerts
+            if severity == 'critical':
+                toast.set_audio(audio.Default, loop=False)
+            
+            # Add action button
+            toast.add_actions(label="View Dashboard", launch="")
+            
+            # Show notification
+            toast.show()
+            
+        except Exception as e:
+            self.logger.error(f"Error showing winotify notification: {e}")
+
+    def _show_toast(self, title: str, message: str, icon_path: str, duration: int):
+        """
+        Show win10toast notification (fallback)
+        
+        Args:
+            title: Notification title
+            message: Notification message
+            icon_path: Path to icon file
+            duration: Duration in seconds
+        """
+        try:
+            self.toaster.show_toast(
+                title=title,
+                msg=message,
+                icon_path=icon_path,
+                duration=duration,
+                threaded=False
+            )
+        except Exception as e:
+            self.logger.error(f"Error showing toast: {e}")
 
     def _trigger_callbacks(self, alert: Alert):
         """

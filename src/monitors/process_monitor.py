@@ -40,15 +40,15 @@ class ProcessInfo:
 
         # Flag-based scoring
         flag_scores = {
-            "hidden_window": 3,
-            "no_window": 2,
-            "suspicious_name": 4,
+            "hidden_window": 4,
+            "no_window": 3,
+            "suspicious_name": 7,  # ✅ INCREASED! Now generates HIGH alerts
             "unsigned": 2,
-            "temp_location": 3,
-            "suspicious_parent": 3,
-            "api_hooking": 5,
-            "network_activity": 2,
-            "rapid_screenshots": 5
+            "temp_location": 4,
+            "suspicious_parent": 4,
+            "api_hooking": 6,
+            "network_activity": 3,
+            "rapid_screenshots": 7
         }
 
         for flag in self.flags:

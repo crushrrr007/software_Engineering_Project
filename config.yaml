@@ -38,9 +38,10 @@ process_monitor:
     - "screencast.exe"
     - "obs64.exe"         # OBS Studio (can record screen)
     - "obs32.exe"
-
   # Whitelisted processes (won't trigger alerts)
   whitelist:
+    #- "SnippingTool.exe"
+    - "WmiApSrv.exe"
     - "explorer.exe"
     - "dwm.exe"
     - "System"
@@ -51,10 +52,58 @@ process_monitor:
     - "services.exe"
     - "lsass.exe"
     - "winlogon.exe"
-    - "MsMpEng.exe"       # Windows Defender
-    - "Teams.exe"         # Microsoft Teams (screen sharing)
-    - "Zoom.exe"          # Zoom (screen sharing)
-    - "discord.exe"       # Discord (screen sharing)
+    - "MsMpEng.exe"
+    - "Teams.exe"
+    - "Zoom.exe"
+    # ADD THESE NEW ONES:
+   # - "discord.exe"
+   # - "Discord.exe"
+    - "brave.exe"
+    - "chrome.exe"
+    - "msedge.exe"
+    - "POWERPNT.EXE"
+    - "WINWORD.EXE"
+    - "EXCEL.EXE"
+    - "conhost.exe"
+    - "nvcontainer.exe"
+    - "NVDisplay.Container.exe"
+    - "NVIDIA Web Helper.exe"
+    - "NVIDIA Share.exe"
+    - "taskhostw.exe"
+    - "RuntimeBroker.exe"
+    - "ApplicationFrameHost.exe"
+    - "SystemSettings.exe"
+    - "ShellHost.exe"
+    - "TextInputHost.exe"
+    - "ctfmon.exe"
+    - "svchost.exe"
+    - "SearchHost.exe"
+    - "StartMenuExperienceHost.exe"
+    - "Widgets.exe"
+    - "PhoneExperienceHost.exe"
+    - "CrossDeviceResume.exe"
+    - "WhatsApp.exe"
+    - "WindowsTerminal.exe"
+    - "Cursor.exe"
+    - "smartscreen.exe"  # Windows SmartScreen
+    - "SecurityHealthSystray.exe"
+    # ASUS specific:
+    - "AsusOptimizationStartupTask.exe"
+    - "ArmouryCrate.UserSessionHelper.exe"
+    - "ASUSSmartDisplayControl.exe"
+    - "AcPowerNotification.exe"
+    - "AsusSoftwareManagerAgent.exe"
+    - "AsusOSD.exe"
+    - "ArmourySocketServer.exe"
+    - "asus_framework.exe"
+    - "vgtray.exe"
+    # Audio:
+    - "RtkAudUService64.exe"
+    - "atieclxx.exe"
+    # Other:
+    - "RiotClientServices.exe"
+    - "RiotClientCrashHandler.exe"
+    - "Cloudflare WARP.exe"
 
   # Monitor these process characteristics
   monitor_characteristics:
@@ -144,7 +193,7 @@ network_monitor:
   large_transfer_threshold: 1048576  # bytes (1MB)
 
   # Monitor upload bandwidth
-  bandwidth_threshold: 5242880  # bytes per minute (5MB)
+  bandwidth_threshold: 52428800  # bytes per minute (50MB)
 
   # Whitelist IPs/Domains (won't trigger alerts)
   whitelist:
@@ -153,7 +202,13 @@ network_monitor:
     - "*.microsoft.com"
     - "*.windows.com"
     - "*.adobe.com"
-
+  trusted_processes:
+    "brave.exe": 104857600      # 100MB/min for Brave
+    "chrome.exe": 104857600      # 100MB/min for Chrome
+    "msedge.exe": 104857600      # 100MB/min for Edge
+    "firefox.exe": 104857600     # 100MB/min for Firefox
+    "Cursor.exe": 52428800       # 50MB/min for Cursor IDE
+    "Code.exe": 52428800         # 50MB/min for VS Code
 # Alert Manager Settings
 alerts:
   enabled: true
@@ -164,6 +219,11 @@ alerts:
     log_file: true
     sound_alert: true
     email_alert: false
+    desktop_notification: true
+  # Notification settings 
+  notification:
+    enabled: true
+    severity_threshold: "medium"  # Show for medium, high, and critical
 
   # Email settings (if enabled)
   email:

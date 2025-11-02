@@ -82,6 +82,11 @@ class NetworkMonitor:
 
         # Whitelist
         self.whitelist_ips = self._parse_whitelist(config.get("whitelist", []))
+        
+        # Trusted processes with custom bandwidth thresholds
+        self.trusted_processes = config.get("trusted_processes", {})
+        # Convert to lowercase for case-insensitive matching
+        self.trusted_processes = {k.lower(): v for k, v in self.trusted_processes.items()}
 
     def _parse_whitelist(self, whitelist: List[str]) -> Set[str]:
         """
@@ -282,19 +287,26 @@ class NetworkMonitor:
                     if entry['timestamp'] > cutoff_time
                 )
 
-                # Alert on high bandwidth
-                if recent_bytes_sent > self.bandwidth_threshold:
-                    try:
-                        proc = psutil.Process(pid)
+                # Get process name and check if it's trusted
+                try:
+                    proc = psutil.Process(pid)
+                    process_name = proc.name()
+                    process_name_lower = process_name.lower()
+                    
+                    # Get threshold for this process (trusted processes may have higher thresholds)
+                    threshold = self.trusted_processes.get(process_name_lower, self.bandwidth_threshold)
+                    
+                    # Alert on high bandwidth (use process-specific threshold if trusted, otherwise default)
+                    if recent_bytes_sent > threshold:
                         self._create_alert(
                             None,
                             "high_bandwidth",
-                            f"High outbound bandwidth detected: {proc.name()} (PID: {pid}) sent {recent_bytes_sent / 1048576:.2f} MB in last minute",
+                            f"High outbound bandwidth detected: {process_name} (PID: {pid}) sent {recent_bytes_sent / 1048576:.2f} MB in last minute",
                             pid=pid,
-                            process_name=proc.name()
+                            process_name=process_name
                         )
-                    except (psutil.NoSuchProcess, psutil.AccessDenied):
-                        pass
+                except (psutil.NoSuchProcess, psutil.AccessDenied):
+                    pass
 
         except Exception as e:
             self.logger.error(f"Error analyzing traffic: {e}")

@@ -379,14 +379,22 @@ class DashboardWindow(QMainWindow):
 
             # Update detailed statistics text
             import json
-            self.stats_text.setPlainText(json.dumps(stats, indent=2))
+            from datetime import datetime
+            def json_serial(obj):
+                """JSON serializer for objects not serializable by default"""
+                if isinstance(obj, datetime):
+                    return obj.isoformat()
+                return str(obj)
 
+            self.stats_text.setPlainText(json.dumps(stats, indent=2, default=json_serial))    
             # Update status
             uptime = stats.get("engine", {}).get("uptime_formatted", "0s")
             self.statusBar().showMessage(f"Monitoring active | Uptime: {uptime}")
 
         except Exception as e:
             print(f"Error updating statistics: {e}")
+            import traceback
+            traceback.print_exc()
 
     def update_stat_box(self, key: str, value: str):
         """Update a stat box value"""

@@ -9,12 +9,12 @@ import threading
 from typing import Dict
 from datetime import datetime
 
-from src.core.alert_manager import AlertManager
-from src.monitors.process_monitor import ProcessMonitor
-from src.monitors.api_monitor import APIMonitor
-from src.monitors.file_monitor import FileMonitor
-from src.monitors.network_monitor import NetworkMonitor
-from src.utils.mitre_mapper import MITREMapper
+from core.alert_manager import AlertManager
+from monitors.process_monitor import ProcessMonitor
+from monitors.api_monitor import APIMonitor
+from monitors.file_monitor import FileMonitor
+from monitors.network_monitor import NetworkMonitor
+from utils.mitre_mapper import MITREMapper
 
 
 class DetectionEngine:
@@ -126,9 +126,9 @@ class DetectionEngine:
         for name, monitor in self.monitors.items():
             try:
                 monitor.start()
-                self.logger.info(f"✓ {name.capitalize()} monitor started")
+                self.logger.info(f"[OK] {name.capitalize()} monitor started")
             except Exception as e:
-                self.logger.error(f"✗ Failed to start {name} monitor: {e}")
+                self.logger.error(f"[ERROR] Failed to start {name} monitor: {e}")
 
         self.logger.info("=" * 80)
         self.logger.info("Detection engine started successfully")
@@ -146,9 +146,9 @@ class DetectionEngine:
         for name, monitor in self.monitors.items():
             try:
                 monitor.stop()
-                self.logger.info(f"✓ {name.capitalize()} monitor stopped")
+                self.logger.info(f"[OK] {name.capitalize()} monitor stopped")  # ← CHANGED
             except Exception as e:
-                self.logger.error(f"✗ Error stopping {name} monitor: {e}")
+                self.logger.error(f"[ERROR] Error stopping {name} monitor: {e}")  # ← ALSO CHANGED
 
         self.running = False
         self.logger.info("Detection engine stopped")

@@ -155,7 +155,7 @@ For more information, visit: https://github.com/yourusername/Detection-of-Malici
 
     # Check for admin privileges
     if not check_admin_privileges():
-        logger.warning("⚠ Not running with administrator privileges")
+        logger.warning("WARNING: Not running with administrator privileges")
         logger.warning("Some detection features may be limited")
         logger.info("For full functionality, run as Administrator/root")
         print()
