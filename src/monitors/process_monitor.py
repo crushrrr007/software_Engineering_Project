@@ -48,7 +48,10 @@ class ProcessInfo:
             "suspicious_parent": 4,
             "api_hooking": 6,
             "network_activity": 3,
-            "rapid_screenshots": 7
+            "rapid_screenshots": 7,
+            "suspicious_cmdline": 5,
+            "suspicious_extension": 6,
+            "high_memory_usage": 2
         }
 
         for flag in self.flags:
@@ -92,7 +95,19 @@ class ProcessMonitor:
         # Known screenshot utilities and patterns
         self.screenshot_patterns = [
             "screenshot", "capture", "snap", "record", "screen",
-            "snip", "grab", "shot", "psr", "gyazo", "puush"
+            "snip", "grab", "shot", "psr", "gyazo", "puush",
+            "lightshot", "picpick", "faststone", "irfanview",
+            "clipboardimage", "ocr", "imagewatch", "screenrec"
+        ]
+
+        # Track screenshot frequency per process
+        self.screenshot_frequency = {}
+
+        # Enhanced behavioral patterns
+        self.suspicious_cmdline_patterns = [
+            "screenshot", "capture", "--screenshot", "-screenshot",
+            "/screenshot", "screencap", "printscreen", "/grab",
+            "--capture", "-c", "--snap"
         ]
 
     def start(self):
@@ -168,7 +183,7 @@ class ProcessMonitor:
 
     def _analyze_process(self, proc: psutil.Process, proc_info: ProcessInfo):
         """
-        Analyze a process for suspicious behavior
+        Analyze a process for suspicious behavior (Enhanced version)
 
         Args:
             proc: psutil Process object
@@ -188,10 +203,44 @@ class ProcessMonitor:
                     self._create_alert(proc_info, f"Process name contains '{pattern}'")
                     break
 
+            # Enhanced: Check command line arguments for screenshot indicators
+            cmdline_str = " ".join(proc_info.cmdline).lower()
+            for pattern in self.suspicious_cmdline_patterns:
+                if pattern in cmdline_str:
+                    proc_info.add_flag("suspicious_cmdline")
+                    self._create_alert(proc_info, f"Suspicious command line argument detected: '{pattern}'")
+                    break
+
             # Check if executable is in TEMP directory
             if proc_info.exe and ("temp" in proc_info.exe.lower() or "tmp" in proc_info.exe.lower()):
                 proc_info.add_flag("temp_location")
                 self._create_alert(proc_info, "Process running from temporary directory")
+
+            # Enhanced: Check for suspicious file extensions in path
+            if proc_info.exe and any(ext in proc_info.exe.lower() for ext in ['.scr', '.pif', '.bat', '.vbs']):
+                proc_info.add_flag("suspicious_extension")
+                self._create_alert(proc_info, "Process has suspicious file extension")
+
+            # Enhanced: Monitor memory usage patterns (high memory could indicate image buffering)
+            try:
+                memory_info = proc.memory_info()
+                memory_mb = memory_info.rss / (1024 * 1024)
+                if memory_mb > 500:  # More than 500MB
+                    proc_info.add_flag("high_memory_usage")
+                    self.logger.debug(f"Process {proc_info.name} using {memory_mb:.2f}MB of memory")
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                pass
+
+            # Enhanced: Check for network connections (potential exfiltration)
+            try:
+                connections = proc.connections()
+                if connections:
+                    proc_info.add_flag("network_activity")
+                    external_connections = [c for c in connections if c.status == 'ESTABLISHED']
+                    if external_connections:
+                        self._create_alert(proc_info, f"Process has {len(external_connections)} active network connections")
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                pass
 
             # Check for hidden window (Windows-specific)
             if os.name == 'nt':
@@ -218,11 +267,25 @@ class ProcessMonitor:
             # Check parent process
             try:
                 parent = proc.parent()
-                if parent and parent.name() in ["powershell.exe", "cmd.exe", "wscript.exe"]:
+                if parent and parent.name() in ["powershell.exe", "cmd.exe", "wscript.exe", "bash.exe", "python.exe"]:
                     proc_info.add_flag("suspicious_parent")
                     self._create_alert(proc_info, f"Process spawned by {parent.name()}")
             except (psutil.NoSuchProcess, psutil.AccessDenied):
                 pass
+
+            # Enhanced: Check for unsigned executables (Windows-specific)
+            if os.name == 'nt' and proc_info.exe:
+                try:
+                    import subprocess
+                    result = subprocess.run(
+                        ['powershell', '-Command', f'Get-AuthenticodeSignature "{proc_info.exe}"'],
+                        capture_output=True, text=True, timeout=5
+                    )
+                    if 'NotSigned' in result.stdout:
+                        proc_info.add_flag("unsigned")
+                        self.logger.debug(f"Process {proc_info.name} is unsigned")
+                except:
+                    pass
 
         except Exception as e:
             self.logger.error(f"Error analyzing process {proc_info.name}: {e}")

@@ -2,6 +2,20 @@
 
 A comprehensive Windows security application that detects and monitors malicious screen capture activities based on MITRE ATT&CK Framework Technique T1113.
 
+## 🎉 Version 2.0 - Major Update Available!
+
+**NEW FEATURES:**
+- 🖥️ **Enhanced GUI** with 6 tabs including real-time charts, performance monitoring, and settings
+- 📊 **Real-Time Visualization** with live alert history and severity distribution graphs
+- 🔍 **Advanced Filtering** and search capabilities across all alerts
+- 📤 **CSV Export** for alerts and comprehensive JSON reports
+- 💻 **Performance Dashboard** tracking CPU, memory, and disk usage
+- 🔔 **System Tray Integration** for background monitoring
+- 🎯 **Enhanced Detection** with 12 new detection flags and improved accuracy
+- ⚙️ **Customizable Settings** panel for personalized monitoring
+
+See [ENHANCEMENTS.md](ENHANCEMENTS.md) for complete details on all new features!
+
 ## Overview
 
 This application provides real-time detection and monitoring of suspicious screen capture activities that may indicate the presence of spyware, keyloggers, or remote access trojans (RATs) attempting to steal sensitive information from your screen.
