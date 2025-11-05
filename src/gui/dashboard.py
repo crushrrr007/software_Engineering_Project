@@ -836,36 +836,239 @@ class DashboardWindow(QMainWindow):
         self.update_alerts()
 
     def show_alert_details(self, item):
-        """Show detailed alert information"""
+        """Show detailed alert information in user-friendly format"""
         row = item.row()
         try:
             alerts = self.alert_manager.get_alerts(limit=100)
             if row < len(alerts):
                 alert = alerts[row]
 
+                # Create dialog
                 dialog = QDialog(self)
-                dialog.setWindowTitle("Alert Details")
-                dialog.setMinimumSize(600, 400)
+                dialog.setWindowTitle("🔍 Alert Details")
+                dialog.setMinimumSize(700, 600)
+                dialog.setStyleSheet("""
+                    QDialog {
+                        background-color: #2d2d2d;
+                        color: #ffffff;
+                    }
+                    QLabel {
+                        color: #ffffff;
+                        font-size: 10pt;
+                    }
+                    QTextEdit {
+                        background-color: #1e1e1e;
+                        border: 1px solid #3d3d3d;
+                        border-radius: 4px;
+                        padding: 8px;
+                        color: #ffffff;
+                    }
+                    QPushButton {
+                        background-color: #0d47a1;
+                        border: none;
+                        padding: 8px 16px;
+                        border-radius: 4px;
+                        font-weight: bold;
+                        color: #ffffff;
+                    }
+                    QPushButton:hover {
+                        background-color: #1565c0;
+                    }
+                    QGroupBox {
+                        border: 2px solid #3d3d3d;
+                        border-radius: 5px;
+                        margin-top: 10px;
+                        padding-top: 10px;
+                        font-weight: bold;
+                        color: #ffffff;
+                    }
+                    QGroupBox::title {
+                        subcontrol-origin: margin;
+                        left: 10px;
+                        padding: 0 5px;
+                    }
+                """)
 
-                layout = QVBoxLayout()
+                main_layout = QVBoxLayout()
 
-                details_text = QTextEdit()
-                details_text.setReadOnly(True)
+                # Header section with severity badge
+                header_widget = QWidget()
+                header_layout = QHBoxLayout()
+                header_widget.setLayout(header_layout)
 
-                import json
-                alert_dict = alert.to_dict()
-                details_text.setPlainText(json.dumps(alert_dict, indent=2))
+                # Severity badge
+                severity_label = QLabel(f" {alert.severity.upper()} ")
+                severity_colors = {
+                    "critical": "background-color: #d32f2f; color: white; font-weight: bold; padding: 8px 16px; border-radius: 4px;",
+                    "high": "background-color: #f57c00; color: white; font-weight: bold; padding: 8px 16px; border-radius: 4px;",
+                    "medium": "background-color: #fbc02d; color: black; font-weight: bold; padding: 8px 16px; border-radius: 4px;",
+                    "low": "background-color: #388e3c; color: white; font-weight: bold; padding: 8px 16px; border-radius: 4px;"
+                }
+                severity_label.setStyleSheet(severity_colors.get(alert.severity.lower(), "background-color: #666;"))
+                header_layout.addWidget(severity_label)
 
-                layout.addWidget(details_text)
+                # Timestamp
+                timestamp_str = alert.timestamp.strftime("%Y-%m-%d %H:%M:%S") if isinstance(alert.timestamp, datetime) else str(alert.timestamp)
+                time_label = QLabel(f"🕐 {timestamp_str}")
+                time_label.setStyleSheet("font-size: 11pt; color: #aaaaaa;")
+                header_layout.addWidget(time_label)
 
-                close_btn = QPushButton("Close")
+                header_layout.addStretch()
+
+                # MITRE tag
+                mitre_label = QLabel(f"MITRE {alert.mitre_technique}")
+                mitre_label.setStyleSheet("background-color: #1565c0; color: white; padding: 6px 12px; border-radius: 4px; font-weight: bold;")
+                header_layout.addWidget(mitre_label)
+
+                main_layout.addWidget(header_widget)
+
+                # Message section
+                message_group = QGroupBox("📋 Alert Message")
+                message_layout = QVBoxLayout()
+                message_text = QLabel(alert.message)
+                message_text.setWordWrap(True)
+                message_text.setStyleSheet("font-size: 11pt; padding: 10px; background-color: #1e1e1e; border-radius: 4px;")
+                message_layout.addWidget(message_text)
+                message_group.setLayout(message_layout)
+                main_layout.addWidget(message_group)
+
+                # Basic information section
+                info_group = QGroupBox("ℹ️ Basic Information")
+                info_layout = QFormLayout()
+                info_layout.setSpacing(10)
+
+                info_layout.addRow(QLabel("<b>Alert ID:</b>"), QLabel(alert.id))
+                info_layout.addRow(QLabel("<b>Type:</b>"), QLabel(alert.type.capitalize()))
+                info_layout.addRow(QLabel("<b>Alert Type:</b>"), QLabel(alert.alert_type if hasattr(alert, 'alert_type') else 'N/A'))
+
+                ack_status = "✓ Yes" if alert.acknowledged else "✗ No"
+                ack_label = QLabel(ack_status)
+                ack_label.setStyleSheet(f"color: {'#4caf50' if alert.acknowledged else '#f44336'}; font-weight: bold;")
+                info_layout.addRow(QLabel("<b>Acknowledged:</b>"), ack_label)
+
+                info_group.setLayout(info_layout)
+                main_layout.addWidget(info_group)
+
+                # Additional details section (process info, etc.)
+                if hasattr(alert, 'data') and alert.data:
+                    details_group = QGroupBox("🔬 Additional Details")
+                    details_layout = QVBoxLayout()
+
+                    details_text = QTextEdit()
+                    details_text.setReadOnly(True)
+                    details_text.setMaximumHeight(200)
+
+                    # Format additional data in a readable way
+                    details_content = []
+                    for key, value in alert.data.items():
+                        if key in ['timestamp', 'type', 'severity', 'message', 'mitre_technique', 'alert_type']:
+                            continue  # Skip already displayed fields
+
+                        if isinstance(value, dict):
+                            details_content.append(f"<b>{key.replace('_', ' ').title()}:</b>")
+                            for sub_key, sub_value in value.items():
+                                if isinstance(sub_value, (list, set)):
+                                    details_content.append(f"  • {sub_key}: {', '.join(map(str, sub_value))}")
+                                else:
+                                    details_content.append(f"  • {sub_key}: {sub_value}")
+                        elif isinstance(value, (list, set)):
+                            details_content.append(f"<b>{key.replace('_', ' ').title()}:</b> {', '.join(map(str, value))}")
+                        else:
+                            details_content.append(f"<b>{key.replace('_', ' ').title()}:</b> {value}")
+
+                    if details_content:
+                        details_text.setHtml("<br>".join(details_content))
+                    else:
+                        details_text.setPlainText("No additional details available")
+
+                    details_layout.addWidget(details_text)
+                    details_group.setLayout(details_layout)
+                    main_layout.addWidget(details_group)
+
+                # Action buttons
+                button_layout = QHBoxLayout()
+
+                copy_btn = QPushButton("📋 Copy to Clipboard")
+                copy_btn.clicked.connect(lambda: self._copy_alert_to_clipboard(alert))
+                button_layout.addWidget(copy_btn)
+
+                export_btn = QPushButton("💾 Export JSON")
+                export_btn.clicked.connect(lambda: self._export_alert_json(alert))
+                button_layout.addWidget(export_btn)
+
+                button_layout.addStretch()
+
+                close_btn = QPushButton("✖ Close")
                 close_btn.clicked.connect(dialog.close)
-                layout.addWidget(close_btn)
+                close_btn.setStyleSheet("""
+                    QPushButton {
+                        background-color: #666666;
+                    }
+                    QPushButton:hover {
+                        background-color: #888888;
+                    }
+                """)
+                button_layout.addWidget(close_btn)
 
-                dialog.setLayout(layout)
+                main_layout.addLayout(button_layout)
+
+                dialog.setLayout(main_layout)
                 dialog.exec_()
         except Exception as e:
             QMessageBox.warning(self, "Error", f"Failed to show alert details: {e}")
+            import traceback
+            traceback.print_exc()
+
+    def _copy_alert_to_clipboard(self, alert):
+        """Copy alert details to clipboard"""
+        try:
+            from PyQt5.QtWidgets import QApplication
+            clipboard = QApplication.clipboard()
+
+            # Format alert as readable text
+            text = f"""
+Alert Details
+=============
+Severity: {alert.severity.upper()}
+Time: {alert.timestamp}
+Type: {alert.type}
+MITRE Technique: {alert.mitre_technique}
+
+Message:
+{alert.message}
+
+Alert ID: {alert.id}
+Acknowledged: {'Yes' if alert.acknowledged else 'No'}
+"""
+            clipboard.setText(text.strip())
+            QMessageBox.information(self, "Copied", "Alert details copied to clipboard!")
+        except Exception as e:
+            QMessageBox.warning(self, "Error", f"Failed to copy to clipboard: {e}")
+
+    def _export_alert_json(self, alert):
+        """Export alert as JSON file"""
+        try:
+            filename, _ = QFileDialog.getSaveFileName(
+                self, "Export Alert as JSON",
+                f"alert_{alert.id}.json",
+                "JSON Files (*.json)"
+            )
+
+            if filename:
+                import json
+                alert_dict = alert.to_dict()
+
+                def json_serializer(obj):
+                    if isinstance(obj, datetime):
+                        return obj.isoformat()
+                    return str(obj)
+
+                with open(filename, 'w', encoding='utf-8') as f:
+                    json.dump(alert_dict, f, indent=2, default=json_serializer)
+
+                QMessageBox.information(self, "Exported", f"Alert exported to {filename}")
+        except Exception as e:
+            QMessageBox.warning(self, "Export Error", f"Failed to export alert: {e}")
 
     def update_charts(self):
         """Update real-time charts"""
