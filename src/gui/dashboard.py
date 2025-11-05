@@ -606,12 +606,17 @@ class DashboardWindow(QMainWindow):
         try:
             all_alerts = self.alert_manager.get_alerts(limit=self.max_alerts_spin.value() if hasattr(self, 'max_alerts_spin') else 100)
 
+            # Debug output
+            print(f"[DEBUG] Retrieved {len(all_alerts)} alerts from alert manager")
+            print(f"[DEBUG] Current filter: severity='{self.alert_filter_severity}', search='{self.alert_search_text}'")
+
             # Apply filters
             filtered_alerts = []
             for alert in all_alerts:
                 # Severity filter
                 if self.alert_filter_severity != "all":
                     if alert.severity.lower() != self.alert_filter_severity.lower():
+                        print(f"[DEBUG] Alert filtered out by severity: {alert.severity} != {self.alert_filter_severity}")
                         continue
 
                 # Search filter
@@ -620,9 +625,12 @@ class DashboardWindow(QMainWindow):
                     if (search_text not in alert.message.lower() and
                         search_text not in alert.type.lower() and
                         search_text not in alert.mitre_technique.lower()):
+                        print(f"[DEBUG] Alert filtered out by search: '{search_text}' not in alert")
                         continue
 
                 filtered_alerts.append(alert)
+
+            print(f"[DEBUG] After filtering: {len(filtered_alerts)} alerts")
 
             self.alerts_table.setRowCount(len(filtered_alerts))
 
@@ -660,6 +668,8 @@ class DashboardWindow(QMainWindow):
 
         except Exception as e:
             print(f"Error updating alerts: {e}")
+            import traceback
+            traceback.print_exc()
 
     def update_processes(self):
         """Update processes table"""
