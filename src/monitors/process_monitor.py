@@ -89,8 +89,10 @@ class ProcessMonitor:
         self.running = False
         self.monitored_processes: Dict[int, ProcessInfo] = {}
         self.alert_callback = None
-        self.suspicious_names = set(config.get("suspicious_processes", []))
-        self.whitelist = set(config.get("whitelist", []))
+        # Convert suspicious names to lowercase for case-insensitive matching
+        self.suspicious_names = set(name.lower() for name in config.get("suspicious_processes", []))
+        # Convert whitelist to lowercase for case-insensitive matching
+        self.whitelist = set(name.lower() for name in config.get("whitelist", []))
 
         # Known screenshot utilities and patterns
         self.screenshot_patterns = [
@@ -158,8 +160,8 @@ class ProcessMonitor:
 
                     current_pids.add(pid)
 
-                    # Skip whitelisted processes
-                    if name in self.whitelist:
+                    # Skip whitelisted processes (case-insensitive)
+                    if name.lower() in self.whitelist:
                         continue
 
                     # Update or create process info

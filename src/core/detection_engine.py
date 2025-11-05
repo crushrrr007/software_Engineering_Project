@@ -287,6 +287,14 @@ class DetectionEngine:
         try:
             import json
 
+            def json_serializer(obj):
+                """Custom JSON serializer for datetime and other objects"""
+                if isinstance(obj, datetime):
+                    return obj.isoformat()
+                elif hasattr(obj, '__dict__'):
+                    return obj.__dict__
+                return str(obj)
+
             report = {
                 "generated_at": datetime.now().isoformat(),
                 "report_type": "MalCapture Defender Detection Report",
@@ -295,12 +303,14 @@ class DetectionEngine:
                 "mitre_techniques": [t.to_dict() for t in self.mitre_mapper.get_all_techniques()]
             }
 
-            with open(output_file, 'w') as f:
-                json.dump(report, f, indent=2)
+            with open(output_file, 'w', encoding='utf-8') as f:
+                json.dump(report, f, indent=2, default=json_serializer, ensure_ascii=False)
 
             self.logger.info(f"Report exported to {output_file}")
             return True
 
         except Exception as e:
             self.logger.error(f"Failed to export report: {e}")
+            import traceback
+            traceback.print_exc()
             return False

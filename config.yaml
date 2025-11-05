@@ -26,18 +26,27 @@ process_monitor:
   scan_interval: 5  # seconds
 
   # Known malicious screenshot utilities
+  # NOTE: Case-insensitive matching is now enabled!
   suspicious_processes:
-    - "psr.exe"           # Problem Steps Recorder
-    - "snippet.exe"       # Snipping Tool (old)
-    - "ScreenSnip.exe"    # Snipping Tool (new)
+    - "psr.exe"                      # Problem Steps Recorder
+    - "snippet.exe"                  # Snipping Tool (old)
+    - "SnippingTool.exe"             # Snipping Tool (Windows 7/8/10)
+    - "ScreenSnip.exe"               # Snipping Tool (Windows 10/11)
+    - "Snip.exe"                     # Windows 11 Snipping Tool
+    - "ScreenClippingHost.exe"       # Windows 10/11 background process
     - "sharex.exe"
+    - "ShareX.exe"
     - "greenshot.exe"
+    - "Greenshot.exe"
     - "lightshot.exe"
+    - "Lightshot.exe"
     - "gyazo.exe"
+    - "Gyazo.exe"
     - "puush.exe"
     - "screencast.exe"
-    - "obs64.exe"         # OBS Studio (can record screen)
+    - "obs64.exe"                    # OBS Studio (can record screen)
     - "obs32.exe"
+    - "obs.exe"
   # Whitelisted processes (won't trigger alerts)
   whitelist:
     #- "SnippingTool.exe"
