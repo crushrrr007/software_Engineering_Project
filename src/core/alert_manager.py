@@ -116,6 +116,9 @@ class AlertManager:
         self.log_directory = config.get("log_directory", "logs")
         self._ensure_log_directory()
 
+        # Load existing alerts from disk
+        self._load_alerts_from_disk()
+
         # Alert delivery methods
         self.gui_notification = config.get("methods", {}).get("gui_notification", True)
         self.log_file = config.get("methods", {}).get("log_file", True)
@@ -124,6 +127,66 @@ class AlertManager:
     def _ensure_log_directory(self):
         """Ensure log directory exists"""
         Path(self.log_directory).mkdir(parents=True, exist_ok=True)
+
+    def _load_alerts_from_disk(self):
+        """Load existing alerts from JSON log files"""
+        try:
+            log_path = Path(self.log_directory)
+            if not log_path.exists():
+                return
+
+            # Find all alert JSON files
+            alert_files = sorted(log_path.glob("alerts_*.json"))
+
+            if not alert_files:
+                self.logger.info("No existing alert files found")
+                return
+
+            loaded_count = 0
+            for alert_file in alert_files:
+                try:
+                    with open(alert_file, 'r', encoding='utf-8') as f:
+                        for line in f:
+                            line = line.strip()
+                            if not line:
+                                continue
+
+                            try:
+                                alert_dict = json.loads(line)
+
+                                # Convert timestamp string back to datetime
+                                if 'timestamp' in alert_dict:
+                                    if isinstance(alert_dict['timestamp'], str):
+                                        alert_dict['timestamp'] = datetime.fromisoformat(alert_dict['timestamp'])
+
+                                # Reconstruct Alert object from stored data
+                                alert = Alert(alert_dict.get('data', alert_dict))
+                                alert.id = alert_dict.get('id', alert.id)
+                                alert.acknowledged = alert_dict.get('acknowledged', False)
+                                alert.timestamp = alert_dict['timestamp']
+
+                                # Add to alerts deque
+                                self.alerts.append(alert)
+                                loaded_count += 1
+
+                            except json.JSONDecodeError as e:
+                                self.logger.warning(f"Failed to parse alert line: {e}")
+                                continue
+
+                except Exception as e:
+                    self.logger.error(f"Error loading alerts from {alert_file}: {e}")
+                    continue
+
+            if loaded_count > 0:
+                self.logger.info(f"Loaded {loaded_count} alerts from disk")
+                # Recalculate statistics
+                for alert in self.alerts:
+                    self._update_stats(alert)
+            else:
+                self.logger.info("No alerts loaded from disk")
+
+        except Exception as e:
+            self.logger.error(f"Error loading alerts from disk: {e}")
 
     def add_alert(self, alert_data: Dict):
         """

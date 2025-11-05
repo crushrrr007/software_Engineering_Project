@@ -53,16 +53,27 @@ class APIMonitor:
         # API call counters (process_name -> api_name -> count)
         self.call_counters = defaultdict(lambda: defaultdict(int))
 
-        # Monitored APIs
+        # Monitored APIs (Enhanced)
         self.monitored_apis = {
             "gdi32.dll": ["BitBlt", "StretchBlt", "CreateCompatibleDC",
-                          "CreateCompatibleBitmap", "GetDIBits"],
-            "user32.dll": ["GetDC", "GetWindowDC", "GetDCEx", "ReleaseDC", "PrintWindow"]
+                          "CreateCompatibleBitmap", "GetDIBits", "GetPixel",
+                          "SetDIBitsToDevice", "StretchDIBits"],
+            "user32.dll": ["GetDC", "GetWindowDC", "GetDCEx", "ReleaseDC",
+                          "PrintWindow", "GetDesktopWindow", "GetForegroundWindow"],
+            "kernel32.dll": ["CreateFileW", "WriteFile"]  # For screenshot file operations
         }
 
         # Pattern detection
         self.pattern_window = config.get("pattern_window", 60)  # seconds
         self.call_threshold = config.get("call_threshold", 30)  # calls per minute
+
+        # Enhanced pattern tracking
+        self.suspicious_sequences = [
+            ["GetDC", "CreateCompatibleDC", "CreateCompatibleBitmap", "BitBlt"],
+            ["GetDesktopWindow", "GetDC", "BitBlt"],
+            ["GetForegroundWindow", "GetWindowDC", "BitBlt"],
+            ["CreateCompatibleDC", "BitBlt", "GetDIBits"]
+        ]
 
     def start(self):
         """Start the API monitor"""
