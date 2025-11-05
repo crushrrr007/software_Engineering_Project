@@ -604,7 +604,7 @@ class DashboardWindow(QMainWindow):
     def update_alerts(self):
         """Update alerts table with filtering and search"""
         try:
-            all_alerts = self.alert_manager.get_alerts(limit=self.max_alerts_spin.getValue() if hasattr(self, 'max_alerts_spin') else 100)
+            all_alerts = self.alert_manager.get_alerts(limit=self.max_alerts_spin.value() if hasattr(self, 'max_alerts_spin') else 100)
 
             # Apply filters
             filtered_alerts = []
