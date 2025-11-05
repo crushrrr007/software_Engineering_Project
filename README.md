@@ -1,294 +1,388 @@
 # MalCapture Defender - Malicious Screen Capture Detection System
 
+![Version](https://img.shields.io/badge/version-2.1-blue.svg)
+![Python](https://img.shields.io/badge/python-3.8+-green.svg)
+![Platform](https://img.shields.io/badge/platform-Windows-lightgrey.svg)
+![License](https://img.shields.io/badge/license-Educational-orange.svg)
+
 A comprehensive Windows security application that detects and monitors malicious screen capture activities based on MITRE ATT&CK Framework Technique T1113.
 
-## 🎉 Version 2.0 - Major Update Available!
+## 🎯 Quick Start
 
-**NEW FEATURES:**
-- 🖥️ **Enhanced GUI** with 6 tabs including real-time charts, performance monitoring, and settings
-- 📊 **Real-Time Visualization** with live alert history and severity distribution graphs
-- 🔍 **Advanced Filtering** and search capabilities across all alerts
-- 📤 **CSV Export** for alerts and comprehensive JSON reports
-- 💻 **Performance Dashboard** tracking CPU, memory, and disk usage
-- 🔔 **System Tray Integration** for background monitoring
-- 🎯 **Enhanced Detection** with 12 new detection flags and improved accuracy
-- ⚙️ **Customizable Settings** panel for personalized monitoring
+```bash
+# 1. Install dependencies
+pip install -r requirements.txt
 
-See [ENHANCEMENTS.md](ENHANCEMENTS.md) for complete details on all new features!
+# 2. Run the application (requires Administrator)
+cd src
+python main.py
 
-## Overview
+# 3. Open Snipping Tool to test detection
+# Press: Win + Shift + S
 
-This application provides real-time detection and monitoring of suspicious screen capture activities that may indicate the presence of spyware, keyloggers, or remote access trojans (RATs) attempting to steal sensitive information from your screen.
+# 4. Check the Alerts tab!
+```
 
-## MITRE ATT&CK Framework Reference
+## ✨ Features
 
-**Technique**: T1113 - Screen Capture
-**Tactic**: Collection
-**Platforms**: Windows, macOS, Linux
+### 🎨 **Beautiful GUI Dashboard**
+- Real-time monitoring with 6 tabs
+- **Enhanced Alert Details** - User-friendly formatted view (not raw JSON!)
+- Color-coded severity badges
+- Live charts and performance metrics
+- Export reports and CSV
 
-### Attack Description
-Adversaries may attempt to take screen captures of the desktop to gather information over the course of an operation. Screen capturing functionality may be included as a feature of remote access tools used in post-compromise operations. Taking screenshots is also typically possible through native utilities or API calls.
+### 🔍 **4-Layer Detection System**
+1. **Process Monitor** - Detects screenshot utilities (SnippingTool, ShareX, etc.)
+2. **API Monitor** - Monitors Windows GDI APIs (BitBlt, GetDC)
+3. **File Monitor** - Tracks rapid image file creation
+4. **Network Monitor** - Detects screenshot exfiltration
 
-## Features
+### 🎯 **MITRE ATT&CK T1113 Coverage**
+- Aligned with Screen Capture technique
+- Comprehensive detection across collection & exfiltration
+- Risk scoring and severity classification
 
-### 1. Process Monitoring
-- Detects suspicious processes accessing screen capture APIs
-- Identifies known screenshot utilities and tools
-- Monitors processes with hidden windows taking screenshots
-- Tracks process behavior patterns
+### 🔔 **Advanced Alerting**
+- Real-time desktop notifications
+- Persistent alert history (survives restarts)
+- Filtering and search capabilities
+- Copy to clipboard & JSON export
 
-### 2. API Monitoring
-- Monitors Windows GDI/GDI+ API calls:
-  - `BitBlt` - Common screenshot API
-  - `GetDC/GetWindowDC` - Device context retrieval
-  - `CreateCompatibleBitmap` - Bitmap creation
-  - `Windows.Graphics.Capture` - Modern capture API
-- Detects suspicious API call patterns
-- Identifies processes hooking into screen capture functions
-
-### 3. File System Monitoring
-- Tracks image file creation (.png, .jpg, .bmp, .gif)
-- Monitors suspicious directories
-- Detects rapid screenshot creation patterns
-- Identifies hidden or temporary screenshot storage
-
-### 4. Network Monitoring
-- Detects potential screenshot exfiltration
-- Monitors unusual network traffic patterns
-- Identifies data transmission to suspicious IPs
-- Tracks bandwidth usage spikes
-
-### 5. Behavioral Analysis
-- Machine learning-based anomaly detection
-- Pattern recognition for malicious behavior
-- Risk scoring for processes
-- Historical behavior tracking
-
-### 6. Alert System
-- Real-time alerts with severity levels (Low, Medium, High, Critical)
-- Comprehensive logging with timestamps
-- MITRE ATT&CK technique mapping
-- Alert history and reporting
-
-### 7. GUI Dashboard
-- Real-time monitoring display
-- Process list with risk assessment
-- Alert timeline and history
-- System statistics and graphs
-- Configuration management
-
-## Architecture
+## 📁 Project Structure
 
 ```
 MalCapture-Defender/
 ├── src/
 │   ├── core/
-│   │   ├── detection_engine.py    # Main detection engine
-│   │   ├── alert_manager.py       # Alert handling and notification
-│   │   └── config_manager.py      # Configuration management
+│   │   ├── detection_engine.py    # Main orchestrator
+│   │   └── alert_manager.py       # Alert handling
 │   ├── monitors/
-│   │   ├── process_monitor.py     # Process monitoring
-│   │   ├── api_monitor.py         # API hook monitoring
+│   │   ├── process_monitor.py     # Process detection
+│   │   ├── api_monitor.py         # API call monitoring
 │   │   ├── file_monitor.py        # File system monitoring
-│   │   └── network_monitor.py     # Network activity monitoring
+│   │   └── network_monitor.py     # Network monitoring
 │   ├── gui/
-│   │   ├── main_window.py         # Main GUI application
-│   │   └── dashboard.py           # Dashboard components
-│   └── utils/
-│       ├── logger.py              # Logging utilities
-│       └── mitre_mapper.py        # MITRE ATT&CK mapping
-├── tests/                         # Test suite
-├── docs/                          # Documentation
-├── logs/                          # Application logs
-└── config.yaml                    # Configuration file
+│   │   └── dashboard.py           # Enhanced GUI
+│   ├── utils/
+│   │   ├── logger.py              # Logging system
+│   │   └── mitre_mapper.py        # MITRE mapping
+│   └── main.py                    # Entry point
+├── tools/
+│   ├── test_alerts.py             # Create test alerts
+│   ├── test_alert_loading.py      # Test alert persistence
+│   ├── diagnose_processes.py      # Find screenshot processes
+│   └── verify_installation.py     # Installation checker
+├── docs/
+│   ├── COMPLETE_TESTING_GUIDE.md  # Comprehensive testing
+│   ├── ALERT_DETAILS_ENHANCEMENT.md
+│   ├── ALERT_DISPLAY_FIX.md
+│   ├── FIXES_SUMMARY.md
+│   ├── INSTALLATION.md
+│   └── MITRE_ATTACK_MAPPING.md
+├── tests/
+│   └── test_detection.py          # Unit tests
+├── config.yaml                     # Configuration
+├── requirements.txt                # Dependencies
+├── QUICKSTART.md                   # Quick start guide
+├── CHANGELOG.md                    # Version history
+└── README.md                       # This file
 ```
 
-## Installation
+## 🚀 Installation
 
 ### Prerequisites
-- Windows 10/11 (64-bit)
-- Python 3.8 or higher
-- Administrator privileges (required for system monitoring)
+- **OS**: Windows 10/11 (64-bit)
+- **Python**: 3.8 or higher
+- **Privileges**: Administrator access required
+- **Disk Space**: ~500MB
 
-### Setup
+### Step-by-Step Setup
 
-1. Clone the repository:
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/crushrrr007/software_Engineering_Project.git
+   cd software_Engineering_Project
+   ```
+
+2. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Verify installation**
+   ```bash
+   python tools/verify_installation.py
+   ```
+
+4. **Run the application**
+   ```bash
+   cd src
+   python main.py
+   ```
+
+For detailed installation instructions, see [docs/INSTALLATION.md](docs/INSTALLATION.md)
+
+## 🧪 Testing
+
+### Quick Test
 ```bash
-git clone https://github.com/crushrrr007/software_Engineering_Project.git
-cd software_Engineering_Project
+# Create test alerts
+python tools/test_alerts.py
+
+# Start GUI
+cd src && python main.py
+
+# Check Alerts tab - should see 4 test alerts!
 ```
 
-2. Install required dependencies:
+### Full Testing Guide
+See [docs/COMPLETE_TESTING_GUIDE.md](docs/COMPLETE_TESTING_GUIDE.md) for:
+- Testing all 4 detection layers
+- Process detection testing
+- API monitoring verification
+- File and network monitoring
+- Troubleshooting guide
+
+### Diagnostic Tools
 ```bash
-pip install -r requirements.txt
+# Find screenshot processes
+python tools/diagnose_processes.py
+
+# Test alert loading
+python tools/test_alert_loading.py
 ```
 
-3. Run the application with administrator privileges:
-```bash
-python src/main.py
-```
-
-## Usage
-
-### Starting the Monitor
-
-1. Launch the application as Administrator
-2. The GUI dashboard will open showing real-time monitoring
-3. All detection modules will start automatically
-4. Alerts will appear in the dashboard and be logged
-
-### Configuring Detection
+## ⚙️ Configuration
 
 Edit `config.yaml` to customize:
-- Detection sensitivity levels
-- Monitored directories
-- Alert thresholds
-- Whitelisted processes
-- Network monitoring rules
 
-### Viewing Alerts
+```yaml
+# Process monitoring
+process_monitor:
+  scan_interval: 5  # seconds
+  suspicious_processes:
+    - "SnippingTool.exe"
+    - "ShareX.exe"
+    # Add your own...
 
-- **Real-time**: Alerts appear in the dashboard immediately
-- **History**: View all alerts in the Alert History tab
-- **Logs**: Detailed logs are stored in `/logs` directory
+# Alert settings
+alerts:
+  methods:
+    gui_notification: true
+    desktop_notification: true
+    log_file: true
 
-### Understanding Risk Scores
-
-- **Low (1-3)**: Normal system activity, minimal risk
-- **Medium (4-6)**: Potentially suspicious, requires attention
-- **High (7-8)**: Likely malicious, immediate review recommended
-- **Critical (9-10)**: Confirmed malicious behavior, take action
-
-## Detection Methods
-
-### 1. API Hook Detection
-Monitors Windows API calls commonly used for screen capture:
-
-```python
-# Monitored APIs
-- user32.dll: GetDC, GetWindowDC, ReleaseDC
-- gdi32.dll: BitBlt, CreateCompatibleDC, CreateCompatibleBitmap
-- Windows.Graphics.Capture namespace (Windows 10+)
+# Detection sensitivity
+detection:
+  sensitivity: "medium"  # low, medium, high
 ```
 
-### 2. Known Utilities Detection
-Identifies known screenshot tools:
-- `psr.exe` (Windows Problem Steps Recorder)
-- `SnippingTool.exe`
-- Third-party tools (ShareX, Greenshot, etc.)
-- PowerShell screenshot scripts
+## 📊 How Detection Works
 
-### 3. Behavioral Patterns
-Detects malicious patterns:
-- Hidden processes taking screenshots
-- Rapid sequential screenshot capture
-- Screenshots during credential entry
-- Unusual screenshot frequency
+### 1. Process Detection
+```
+Process Scanner (every 5 seconds)
+  ↓
+Checks: SnippingTool.exe, ShareX.exe, etc.
+  ↓
+Pattern matching: "snip", "capture", "screen"
+  ↓
+Behavioral analysis: hidden windows, memory usage
+  ↓
+Risk Score: 0-10 → Severity: Low/Medium/High/Critical
+  ↓
+Alert Generated
+```
 
-### 4. Network Exfiltration
-Monitors for data theft:
-- Image file transmission
-- Encrypted payload detection
-- Suspicious destination IPs
-- Unusual bandwidth usage
+**Try it**: Open Snipping Tool (Win + Shift + S)
 
-## MITRE ATT&CK Mapping
+### 2. API Monitoring
+Monitors Windows GDI API calls:
+- `BitBlt` - Screen pixel copying
+- `GetDC` - Device context retrieval
+- `StretchBlt` - Screen region copying
 
-### T1113 - Screen Capture
-**Detection Methods Implemented:**
+**Triggers**: >30 calls per minute
 
-| Detection Type | Description | Implementation |
-|----------------|-------------|----------------|
-| Process Monitoring | Monitor for processes with screen capture capabilities | `process_monitor.py` |
-| API Monitoring | Track calls to screen capture APIs | `api_monitor.py` |
-| File Monitoring | Detect creation of image files | `file_monitor.py` |
-| Network Monitoring | Identify screenshot exfiltration | `network_monitor.py` |
+### 3. File Monitoring
+Watches for rapid image creation:
+- Monitors: TEMP, AppData directories
+- Detects: 5+ images in 30 seconds
+- Formats: PNG, JPG, BMP, GIF
 
-## Testing
+### 4. Network Monitoring
+Detects screenshot exfiltration:
+- Large image uploads (>1MB)
+- High bandwidth usage (>50MB/min)
+- Suspicious ports (4444, 5555, etc.)
 
-### Running Tests
+## 🎨 GUI Features
+
+### Enhanced Alert Details
+Double-click any alert to see:
+
+```
+┌─────────────────────────────────────┐
+│ CRITICAL  🕐 12:30:45    MITRE T1113│
+│                                     │
+│ 📋 Alert Message                   │
+│ Suspicious process detected:       │
+│ ScreenSnip.exe (PID: 12345)        │
+│                                     │
+│ ℹ️ Basic Information               │
+│ • Type: Process                    │
+│ • Alert ID: xxx                    │
+│ • Acknowledged: ✗ No               │
+│                                     │
+│ 🔬 Additional Details              │
+│ • Risk Score: 8/10                 │
+│ • Flags: suspicious_name           │
+│                                     │
+│ [📋 Copy] [💾 Export] [✖ Close]   │
+└─────────────────────────────────────┘
+```
+
+**Features**:
+- Color-coded severity badges
+- Copy to clipboard
+- Export as JSON
+- Organized sections
+- No more raw JSON!
+
+### Dashboard Tabs
+1. **🚨 Alerts** - Real-time alerts with filtering
+2. **⚙️ Processes** - Suspicious process list
+3. **📊 Real-Time** - Live charts
+4. **💻 Performance** - System metrics
+5. **📈 Statistics** - Detection stats
+6. **⚙️ Settings** - Configuration
+
+## 🔧 Troubleshooting
+
+### ❌ "Snipping Tool not detected"
 ```bash
-# Run all tests
-python -m pytest tests/
+# 1. Find the exact process name
+python tools/diagnose_processes.py
 
-# Run specific test module
-python -m pytest tests/test_process_monitor.py
+# 2. Open Snipping Tool
 
-# Generate coverage report
-python -m pytest --cov=src tests/
+# 3. Run diagnostic again
+python tools/diagnose_processes.py
+
+# 4. Add to config.yaml if needed
 ```
 
-### Test Screenshot Detection
-The application includes a safe test mode that simulates screenshot activity for validation:
+**Note**: Detection is now **case-insensitive**!
 
-```bash
-python tests/test_detection.py
-```
+### ❌ "No alerts appearing"
+- Check filter is set to "All"
+- Clear search box
+- Look for `[DEBUG]` messages in console
+- Verify detection engine is running
 
-## Troubleshooting
+### ❌ "Export report fails"
+✅ **FIXED** - Datetime serialization now handled automatically
 
-### Common Issues
+See [docs/FIXES_SUMMARY.md](docs/FIXES_SUMMARY.md) for all resolved issues.
 
-**Issue**: Application won't start
-**Solution**: Ensure you're running as Administrator and Python 3.8+ is installed
+## 📚 Documentation
 
-**Issue**: No alerts appearing
-**Solution**: Check detection sensitivity in config.yaml, may be set too high
+| Document | Description |
+|----------|-------------|
+| [QUICKSTART.md](QUICKSTART.md) | Quick start guide |
+| [CHANGELOG.md](CHANGELOG.md) | Version history |
+| [docs/COMPLETE_TESTING_GUIDE.md](docs/COMPLETE_TESTING_GUIDE.md) | Comprehensive testing |
+| [docs/ALERT_DETAILS_ENHANCEMENT.md](docs/ALERT_DETAILS_ENHANCEMENT.md) | Alert UI improvements |
+| [docs/FIXES_SUMMARY.md](docs/FIXES_SUMMARY.md) | All bug fixes |
+| [docs/INSTALLATION.md](docs/INSTALLATION.md) | Detailed installation |
+| [docs/MITRE_ATTACK_MAPPING.md](docs/MITRE_ATTACK_MAPPING.md) | MITRE ATT&CK coverage |
 
-**Issue**: High CPU usage
-**Solution**: Adjust monitoring intervals in configuration
+## 🛡️ MITRE ATT&CK T1113 Coverage
 
-**Issue**: False positives
-**Solution**: Add legitimate processes to whitelist in config.yaml
+### Screen Capture Detection
+| Detection Layer | Implementation | Status |
+|----------------|----------------|--------|
+| Process Monitoring | `process_monitor.py` | ✅ Active |
+| API Monitoring | `api_monitor.py` | ✅ Active |
+| File Monitoring | `file_monitor.py` | ✅ Active |
+| Network Monitoring | `network_monitor.py` | ✅ Active |
 
-## Security Considerations
+**Coverage**: Collection → Exfiltration (full chain)
 
-- This tool requires administrative privileges to monitor system activities
-- All logs and alerts are stored locally
-- No data is transmitted outside your system
-- Review whitelisted processes regularly
-- Keep the application updated
+## 🎯 Risk Scoring
 
-## Contributing
+| Risk Score | Severity | Action |
+|------------|----------|--------|
+| 9-10 | 🔴 Critical | Immediate action required |
+| 7-8 | 🟠 High | Review immediately |
+| 4-6 | 🟡 Medium | Investigate when possible |
+| 1-3 | 🟢 Low | Monitor for patterns |
 
-Contributions are welcome! Please:
+## 🔒 Security & Privacy
+
+- ✅ All processing happens locally
+- ✅ No data sent to external servers
+- ✅ Logs stored securely on your system
+- ✅ Administrator privileges for monitoring only
+- ✅ Open source - audit the code yourself
+
+## 🤝 Contributing
+
+Contributions welcome! Please:
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-## License
+## 📝 License
 
-This project is created for educational purposes as part of a Software Engineering course project.
+Educational use only. Created for Software Engineering course project.
 
-## Disclaimer
+## 👥 Authors
 
-This software is designed for defensive security purposes only. Use it to protect your systems from malicious screen capture activities. Do not use this tool for unauthorized monitoring or malicious purposes.
+- **Software Engineering Project Team**
+- **Course**: Software Engineering
+- **Institution**: [Your Institution]
+- **Year**: 2025
 
-## Authors
+## 🙏 Acknowledgments
 
-- Software Engineering Project Team
-- Course: Software Engineering
-- Topic: Detection of Malicious Screen Capture in Windows
+- MITRE ATT&CK Framework for threat intelligence
+- Windows API documentation
+- PyQt5 community for GUI development
+- Python security community
 
-## References
+## 📖 References
 
-- [MITRE ATT&CK T1113 - Screen Capture](https://attack.mitre.org/techniques/T1113/)
+- [MITRE ATT&CK T1113](https://attack.mitre.org/techniques/T1113/)
 - [Windows API Documentation](https://docs.microsoft.com/en-us/windows/win32/api/)
-- [Kaspersky - Screenshot Protection](https://www.kaspersky.com/blog/preventing-dangerous-screenshots/22944/)
+- [Screen Capture Security Best Practices](https://www.kaspersky.com/blog/preventing-dangerous-screenshots/22944/)
 
-## Changelog
+## 🆘 Support
 
-### Version 1.0.0 (Initial Release)
-- Process monitoring implementation
-- API hook detection
-- File system monitoring
-- Network monitoring
-- GUI dashboard
-- Alert system
-- MITRE ATT&CK mapping
-- Comprehensive logging
+Having issues? Check:
+1. [docs/FIXES_SUMMARY.md](docs/FIXES_SUMMARY.md) - Common issues resolved
+2. [docs/COMPLETE_TESTING_GUIDE.md](docs/COMPLETE_TESTING_GUIDE.md) - Testing & troubleshooting
+3. [GitHub Issues](https://github.com/crushrrr007/software_Engineering_Project/issues)
+
+## ⭐ Star History
+
+If this project helped you, please consider giving it a star! ⭐
 
 ---
 
-**Note**: This application is designed to detect malicious screen capture activities. For best results, run continuously in the background and review alerts regularly.
+**Status**: ✅ Production Ready
+**Version**: 2.1
+**Last Updated**: November 2025
+
+**Quick Links**:
+- 📖 [Quick Start](QUICKSTART.md)
+- 🧪 [Testing Guide](docs/COMPLETE_TESTING_GUIDE.md)
+- 🐛 [Bug Fixes](docs/FIXES_SUMMARY.md)
+- 📊 [MITRE Coverage](docs/MITRE_ATTACK_MAPPING.md)
+
+---
+
+Made with ❤️ for Windows Security
